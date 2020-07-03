@@ -1,13 +1,13 @@
 'use-strict';
 
-/*  functions that generates boxes.
-    You can pass a number of boxes into the genrator
-    or you can get a set amount of boxes you want to return. 
-    it returns the boxes in a new array
+/*  
+    Pass functions as arguments through an options object. 
+    Allows for customization of the generated boxes and 
+    the customization of generated boxes' content 
 */
 
 module.exports = {
-	// ranMultToken and ranMultBox are multipliers for box and token generation
+	// boxAmount is the amount of boxes you want to generate
 	engines: {
 		generateBoxes: function ({ boxAmount, boxContentOptions = () => undefined, boxOptions = () => undefined }) {
 			let boxArr = [];

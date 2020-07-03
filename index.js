@@ -26,9 +26,9 @@ class Box {
 		if (this.locked) throw new LockedBoxError('The box is locked');
 		else return this._content;
 	}
-	static setContent(box, callback) {
+	static setContent(box, body) {
 		if (box.locked) throw new LockedBoxError('The box is locked');
-		return callback(box); // access any properties conent may have. Also allows for properties to added.
+		return body(box); // access any properties conent may have. Also allows for properties to added.
 	}
 }
 class BoxCleaner {
