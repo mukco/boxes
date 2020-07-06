@@ -27,9 +27,9 @@ class Box {
 		if (this.locked) throw new LockedBoxError('The box is locked');
 		else return this._content;
 	}
-	setContent(body) {
-		if (this.locked) throw new LockedBoxError('The box is locked');
-		return body(this); // access any properties conent may have. Also allows for properties to added.
+	setContent(box, body) {
+		if (box.locked) throw new LockedBoxError('The box is locked');
+		return body(box); // access any properties conent may have. Also allows for properties to added.
 	}
 }
 class BoxCleaner {
@@ -62,9 +62,9 @@ class BoxCleaner {
 					if (box.locked) {
 						box.unlock();
 					}
-					box.setContent(() => {
-						return (this._content = []);
-					});
+					box.setContent = (box) => {
+						return (box._content = []);
+					};
 					cleanBoxes.unshift(box);
 					box.lock();
 				} catch (e) {
@@ -75,25 +75,24 @@ class BoxCleaner {
 			}
 			this._queue = [];
 			this.turnOff();
-			return resolve(cleanBoxes); 
+			return resolve(cleanBoxes);
 		});
 	};
 	set addBox(box) {
 		if (!this.on) throw new NoBoxesError(this.FAILURE_STAGE.STAGE_ONE);
 		this._queue.push(box);
-		this._queue = this._queue[0]; // Need to find a better way to flatten the array
+		this._queue = this._queue.flat(); // Need to find a better way to flatten the array
 	}
 	get queueLength() {
 		return this._queue.length;
 	}
 }
 const boxGenerationOptions = {
-	boxAmount: 100,
-	boxContentOptions: (box) => {
-		return box._content.push(Math.floor(Math.random() * 1000));
-	},
+	boxAmount: 1,
 	boxOptions: () => {
-		return new Box([]);
+		return new Box({ 
+			crypto: crypto
+		});
 	},
 };
 
