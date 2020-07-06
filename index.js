@@ -10,6 +10,7 @@ class Box {
 		this._id = Math.floor(Math.random() * 10000);
 		this.locked = true;
 		this._content = content || [];
+		this.created_at = new Date();
 		this.key = (function () {
 			let cryptKey = key || Math.floor(Math.random() * 10000).toString();
 			let encryptedKey = crypto.scryptSync(cryptKey, 'salt', 24);
@@ -26,9 +27,9 @@ class Box {
 		if (this.locked) throw new LockedBoxError('The box is locked');
 		else return this._content;
 	}
-	static setContent(box, body) {
-		if (box.locked) throw new LockedBoxError('The box is locked');
-		return body(box); // access any properties conent may have. Also allows for properties to added.
+	setContent(body) {
+		if (this.locked) throw new LockedBoxError('The box is locked');
+		return body(this); // access any properties conent may have. Also allows for properties to added.
 	}
 }
 class BoxCleaner {
@@ -61,8 +62,8 @@ class BoxCleaner {
 					if (box.locked) {
 						box.unlock();
 					}
-					Box.setContent(box, () => {
-						return (box._content = []);
+					box.setContent(() => {
+						return (this._content = []);
 					});
 					cleanBoxes.unshift(box);
 					box.lock();
@@ -74,21 +75,20 @@ class BoxCleaner {
 			}
 			this._queue = [];
 			this.turnOff();
-			return resolve(cleanBoxes); // will return an array that can be iterated over
+			return resolve(cleanBoxes); 
 		});
 	};
 	set addBox(box) {
 		if (!this.on) throw new NoBoxesError(this.FAILURE_STAGE.STAGE_ONE);
 		this._queue.push(box);
-		this._queue = this._queue[0];
+		this._queue = this._queue[0]; // Need to find a better way to flatten the array
 	}
 	get queueLength() {
 		return this._queue.length;
 	}
 }
-
-const options = {
-	boxAmount: 20,
+const boxGenerationOptions = {
+	boxAmount: 100,
 	boxContentOptions: (box) => {
 		return box._content.push(Math.floor(Math.random() * 1000));
 	},
@@ -97,18 +97,15 @@ const options = {
 	},
 };
 
-const boxes = Generators.engines.generateBoxes(options);
+const boxes = Generators.engines.generateBoxes(boxGenerationOptions);
 console.log(boxes);
 const boxCleaner = new BoxCleaner();
 boxCleaner.turnOn();
 boxCleaner.addBox = boxes;
 console.log(boxCleaner);
-const cleanBoxes = boxCleaner
-	.cleanBoxes()
-	.then((cleanbox) =>
-		cleanbox.forEach((box) => {
-			// console.log(box);
-		})
-	)
-	.catch((e) => console.log(e));
-console.log(cleanBoxes)
+try {
+	const cleanBoxes = boxCleaner.cleanBoxes();
+	console.log(cleanBoxes);
+} catch (e) {
+	console.log(e);
+}
